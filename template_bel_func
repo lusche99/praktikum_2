@@ -1,0 +1,40 @@
+#Plot und fit an beliebige Funktion
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+import sympy as sym
+
+#fit z.B an eine Exponentialfunktion oder ein polynom
+
+def func(x, a,b,c,d):
+    #return a*x**3 + b*x**2 +c*x + d  #fit an polynom
+    return a*np.exp(-b*x)+c*x+d
+
+#Daten die an die e-Fkt gefittet werden sollen
+
+y, x = np.loadtxt('Daten.txt', delimiter = ',', unpack ='True') 
+
+#Messdaten Plotten
+
+plt.plot(x,y, 'o', label='Messwerte')
+
+#fit anlegen
+
+popt, pcov = curve_fit(func, x, y)
+
+#Ergebniss:
+#popt[0] = a, popt[1] =b, popt[2] = c, popt[3] = d
+
+#Ausgbabe fit Parameter
+print("a = %s , b = %s, c = %s, d = %s" % (popt[0], popt[1], popt[2], popt[3]))
+
+#Plotten des Fits
+plt.plot(x, func(x, *popt), label="Fitted Curve") #same as line above \/
+plt.ylabel('Kreiselfrequenz in Hz', size='medium')
+plt.xlabel('Zeit in s', size='medium')
+
+#testen ob fit zutreffend ist
+#plt.plot(x, popt[0]*np.exp(-popt[1]*x)+popt[2]*x+popt[3], label="Fitted Curve")
+
+plt.legend(loc='upper left')
+plt.show()
