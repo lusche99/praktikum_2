@@ -1,0 +1,69 @@
+#Fehler berechnung mit odr
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.odr import *
+import random
+
+def linreg(B, x):   
+    # !!!   Reihenfolge von B und x hier wichtig    !!!
+    #   B [Steigung]
+    return(B[0] * x + B[1] )
+
+# Einlesen und Berechnen der endgültigen x- und y-Achsen Einträge
+
+n, tl = np.loadtxt('data.csv', delimiter=',', unpack = True)
+
+x  = n
+y1 = tl
+
+x_err = 0.1
+y_err = 0.4
+###     Das sind jetzt konstante Fehler aber Arrays mit dynamischen gehen auch 
+#   y_err = 0.02 * x    #   z.B. für 2% y-Abweichung 
+
+
+##########################################
+###     Fit Erstellen
+
+fitf = Model(linreg)    #    Modell der Funktion bilden       
+data = RealData(x, y1, sx=x_err, sy=y_err)   #   Daten und Fehler Auswerten
+odr = ODR(data, fitf, beta0=[1., 0])   #   ODR Fit erstellen
+out1 = odr.run()     
+    #
+    #   odr.run gibt als output:
+    #   out.beta    :   Fitparameter
+    #   out.sd_beta :   Fehler auf beta
+    #   cov_beta    :   Covarianz
+    #
+
+
+
+a1 = out1.beta[0]
+da1 = out1.sd_beta[0]     #   Fehler auf Steigung
+b1 = out1.beta[1]
+db1 = out1.sd_beta[1]
+###########################################
+###     Ausgabe
+
+
+###     Ausgeben der Plots
+plt.figure(figsize=(8,6))
+N = len(n)
+xrng = abs(x[0] - x[N-1])
+xmin = x[0] - 0.1 * xrng
+xmax = x[N-1] + 0.1 * xrng
+x_fit = np.linspace(xmin, xmax, 100 * N)
+y_fit1 = linreg(out1.beta, x_fit)
+plt.errorbar(x, y1, xerr=x_err, yerr=y_err, linestyle='None', marker='.', label='Messung der Schwebungsdauer', color='r', capsize=2)
+plt.plot(x_fit, y_fit1, label= 'ODR Fit\n $ T( N ) = ({:.3f} \pm {:.3f})\cdot N\,$s $+ ({:.3f}\pm{:.3f}) \,$s'.format(a1,da1, b1, db1), color='r')
+
+###     Plot verschoenern
+#plt.title("Kalibrierungswerte der Hallsonde und linearer Fit", size='x-large')
+plt.ylabel("Dauer für $N$ Schwingungen bei Schwebung in s", size='x-large')
+plt.xlabel("Schwingungszahl $N$", size='x-large')
+plt.grid()
+plt.legend(loc = 'upper left', fontsize='small')
+
+#      Speichern und anzeigen   
+plt.savefig('./Schwebung3_4.png')
+plt.show()
