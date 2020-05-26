@@ -1,0 +1,126 @@
+#Lib
+# -*- encoding: utf-8 -*-
+import numpy as np
+import matplotlib.pyplot as plt
+import PhyPraKit as ppk
+
+##Basics
+#Read .csv data
+def readCsv(fname):
+    headerlines, data = ppk.readCSV(fname, nlhead=1) # data is of type ndarray
+    headers = headerlines[0].replace('\n', '').replace('"','').split(',')
+    
+    if(len(data.shape)>1):
+        print(" --> ", data.shape[0], " columns: ", headers)
+        print(" --> ", data.shape[1], " data points")
+    else:
+        print(" -->  1  column: ", headers)
+        print(" --> ", data.shape[0], " data points")
+        indices = np.arange(data.shape[0])
+        data = np.asarray([indices,data])
+        headers = ['Index', headers[0]]
+    return data, headers
+
+#show data
+def showData(data, headers, xAxisMaxValue = 0, saveFigureAs=''):
+  IndexMax = len(data[0]); #this value is meant to be excluded
+  figureFileNameAddition = ""
+  if(xAxisMaxValue != 0):
+    figureFileNameAddition = '(' + str(xAxisMaxValue) + ')'
+    for i in range(0, len(data[0])):
+      if(xAxisMaxValue < data[0][i]):
+        IndexMax = i
+        break
+  shortxAxisValues = data[0][range(0, IndexMax)]
+  shortData = data;
+  for i in range(0, data.shape[0]):
+    shortData[i] = data[i][range(0, IndexMax)]
+
+  plt.subplots_adjust(left=0.060, bottom=0.1, right=0.98, top=0.96,
+                      wspace=0.3, hspace=0.5)
+  plt.axhline(0, color = 'grey', lw=0.5)
+  #plt.rcParams["figure.figsize"] = [6.5,2.5]
+
+  for i in range(1, data.shape[0]):
+    plt.scatter(shortxAxisValues, shortData[i],  label=headers[i], marker='.'); 
+  plt.legend();
+  #plt.ylabel('acceleration (m/s^2)');
+  plt.xlabel(headers[0]);
+  plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+  plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+  if (saveFigureAs != ''):
+      plt.savefig(saveFigureAs)
+      print('Saved figure as:',saveFigureAs)
+  plt.axhline(0, color = 'grey', lw=0.5)
+  plt.axvline(0, color = 'grey', lw=0.5)
+  plt.show();
+  plt.clf()
+  plt.cla()
+
+#Latex table from 2d array
+def latexTableFromArray(Array, factor = 1):
+  result='\n';
+  for i in range(0, len(Array)):
+    result += '\\\\ \n';
+    for j in range(0, len(Array[0])):
+      result += str(Array[i][j] * factor) + ' & '
+  return result;
+
+## TODO
+#Haufigkeitsverteilung anzeigen
+def plot_haufigkeit(wurfReihe, mu, sigma):
+    (values,binEdges,unknown) = plt.hist(wurfReihe, int(8 + np.sqrt(len(wurfReihe)*5)*0.13))
+    xValues = xValuesOfHist(binEdges);
+    plt.clf();
+    plt.bar(xValues, values, binEdges[1] - binEdges[0], align='center', color='g', alpha=0.7)
+    plt.xlabel('Mittlere Augenzahl', size='x-large')
+    plt.ylabel('Häufigkeit', size='x-large')
+
+    # plot Gauss distribution
+    #x = np.arange(binEdges[0], binEdges[len(binEdges)-1], 0.1*sigma)
+    x = np.arange(-4.*sigma + mu, 4.*sigma + mu, 0.1*sigma)
+    normFactor = len(wurfReihe) *(binEdges[1] - binEdges[0]);
+    print("norm factor:", normFactor);
+    plt.plot(x, fgauss(x, mu, sigma)*normFactor, 'r-')             # plot function
+
+    plt.show()
+
+
+##Statistik über Histogramm
+def MeansFromEdges(binEdges):
+    return (binEdges[:-1] + binEdges[1:])/2;
+def HistoMean(Amounts, Values):
+    ValueSum = (Values*Amounts).sum(); #elementwise multiplication
+    return ValueSum/float(Amounts.sum());
+def HistoVariance(Amounts, Values, mean):
+    SquDiffSum = np.sum(((Values-mean)**2)*Amounts); #elementwise calculation
+    return SquDiffSum/float(Amounts.sum());
+#biased/unbiased?
+def HistoDeviation(Amounts, Values, mean):
+    return np.sqrt(HistoVariance(Amounts, Values, mean));
+    
+## Gauss Verteilung
+#gauss curve
+def fgauss(x, mu, sigma):
+    return (np.exp(-(x-mu)**2/2/sigma**2)/np.sqrt(2*np.pi)/sigma);
+
+#plot normed gauss curve and histogram from data (1D array filled with values).
+def GaussHistAndFunc(data, mu, sigma):
+    n, bins, patches = plt.hist(data, 30, normed=1, facecolor='g', log=False, alpha=0.5)  # plot data
+
+    plt.xlabel('x')
+    plt.ylabel('probability density')
+    plt.title('Histogram of Gauss distribution')
+
+    # plot Gauss distribution
+    x = np.arange(-4.*sigma + mu, 4.*sigma + mu, 0.1*sigma)
+    plt.plot(x, fgauss(x, mu, sigma), 'r-')             # plot function
+
+    # a nicely type-set formula of the function
+    plt.text(sigma  + mu, 0.85*fgauss(mu, mu, sigma),
+             r'$f(x) = \frac{1}{\sqrt{2\pi}\sigma}\,\exp{\left(\frac{-(x-\mu)^2}{2\sigma^2}\right)}$',
+             fontsize=14, color='b')
+
+    plt.grid(True)  # show a grid for orientation
+    plt.show()      # now display everything on the screen
+
