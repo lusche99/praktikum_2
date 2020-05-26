@@ -1,0 +1,24 @@
+#Plot und linreg beliebiger Messdaten
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import linregress
+
+x, y = np.loadtxt('Daten.txt', delimiter = ',', unpack = True) #hier Datei namen einfügen um die Daten einzulesen
+
+
+b, a, r, p, std = linregress(x,y) #linearen Fit anlegen
+#b = steigung, a = achsenabschnitt , r,p,std einfach aus linregress googlen
+
+#Daten plotten
+
+plt.plot(x,y, 'o', label ='Titel')
+plt.plot(x, b*x+a, 'r', label='Ausgleichsgerade')
+
+#Graph aufhübschen - hier müssen die Namen zu den Daten angpasst werden
+plt.title(' Titel des Graphen')
+plt.xlabel('x-achse', size='medium')
+plt.ylabel('y-achse', size='medium')
+plt.legend(loc='upper left')
+
+plt.show()
