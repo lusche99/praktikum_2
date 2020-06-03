@@ -12,26 +12,34 @@ def func(x, a,b,c,d):
 
 #Daten die an die e-Fkt gefittet werden sollen
 
-y, x = np.loadtxt('Daten.txt', delimiter = ',', unpack ='True') 
+y, x = np.loadtxt('Daten.txt', delimiter = ',', unpack ='True') #hier evtl reihenfolge von x und y tauschen
 
 #Messdaten Plotten
 
 plt.plot(x,y, 'o', label='Messwerte')
 
 #fit anlegen
-
 popt, pcov = curve_fit(func, x, y)
 
 #Ergebniss:
-#popt[0] = a, popt[1] =b, popt[2] = c, popt[3] = d
+#popt[0] = a, popt[1] =b, popt[2] = c, popt[3] = d usw
 
 #Ausgbabe fit Parameter
-print("a = %s , b = %s, c = %s, d = %s" % (popt[0], popt[1], popt[2], popt[3]))
+
+for i in range(len(popt)):
+    print("fitparamter a,b,c,..=", popt[i])
+    i+= i
+
+#Ausgabe der Fehler auf die Fit-Parameter
+
+for i in range(len(np.diag(pcov))) 
+    print("fehler a,b,c,..=", np.sqrt(np.diag(pcov)))
+    i+=i
 
 #Plotten des Fits
 plt.plot(x, func(x, *popt), label="Fitted Curve") #same as line above \/
-plt.ylabel('Kreiselfrequenz in Hz', size='medium')
-plt.xlabel('Zeit in s', size='medium')
+plt.ylabel('x-achse', size='medium')
+plt.xlabel('y-achse', size='medium')
 
 #testen ob fit zutreffend ist
 #plt.plot(x, popt[0]*np.exp(-popt[1]*x)+popt[2]*x+popt[3], label="Fitted Curve")
